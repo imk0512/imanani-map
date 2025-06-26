@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { collection, query, where, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, Timestamp } from 'firebase/firestore';
 import { db } from '../../../lib/firebase';
 
 export type Post = {
@@ -20,25 +20,29 @@ export default function StatusMap() {
   const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
-    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    const THIRTY_MINUTES = 30 * 60 * 1000;
 
     const q = query(
       collection(db, 'posts'),
-      where('timestamp', '>=', thirtyMinutesAgo),
       orderBy('timestamp', 'desc')
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data: Post[] = snapshot.docs.map((doc) => {
-        const d = doc.data();
-        return {
-          id: doc.id,
-          preset: d.preset,
-          message: d.message ?? undefined,
-          timestamp: d.timestamp instanceof Timestamp ? d.timestamp.toDate() : new Date(),
-          location: d.location ?? {},
-        } as Post;
-      });
+      const now = new Date();
+
+      const data: Post[] = snapshot.docs
+        .map((doc) => {
+          const d = doc.data();
+          return {
+            id: doc.id,
+            preset: d.preset,
+            message: d.message ?? undefined,
+            timestamp: d.timestamp instanceof Timestamp ? d.timestamp.toDate() : new Date(),
+            location: d.location ?? {},
+          } as Post;
+        })
+        .filter((post) => now.getTime() - post.timestamp.getTime() <= THIRTY_MINUTES);
+
       setPosts(data);
     });
 
