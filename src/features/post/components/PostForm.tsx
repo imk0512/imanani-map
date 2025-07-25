@@ -1,7 +1,8 @@
 import { useState } from 'react';
+import { PRESETS, Preset } from '../presets';
 
 export type PostInput = {
-  preset: string;
+  preset: Preset;
   message?: string;
 };
 
@@ -9,25 +10,15 @@ type PostFormProps = {
   onSubmit: (post: PostInput) => void;
 };
 
-const presets = [
-  '🛋️ だらけ中',
-  '☕ カフェ中',
-  '🚶‍♀️ 散歩中',
-  '🎮 ゲーム中',
-  '🛏️ 寝ようとしてる',
-  '📖 読書中',
-  '📚 勉強中',
-  '🧘‍♀️ 瞑想中',
-  '✍️ 仕事中',
-];
+const presets = PRESETS;
 
 export default function PostForm({ onSubmit }: PostFormProps) {
-  const [preset, setPreset] = useState(presets[0]);
+  const [preset, setPreset] = useState<Preset>(presets[0]);
   const [message, setMessage] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ preset, message: message ? message : undefined });
+    onSubmit({ preset, message: message || undefined });
     setMessage('');
   };
 
