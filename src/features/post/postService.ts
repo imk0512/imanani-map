@@ -17,21 +17,19 @@ export async function createPost(postInput: PostInput): Promise<void> {
     throw new Error('preset is required');
   }
 
+  const location = {
+    ...(typeof latitude === 'number' && { lat: latitude }),
+    ...(typeof longitude === 'number' && { lng: longitude }),
+    ...(prefecture && { prefecture }),
+    ...(city && { city }),
+  };
+
   const data: Record<string, any> = {
     preset,
     message: message ?? null,
     timestamp: serverTimestamp(),
+    ...(Object.keys(location).length && { location }),
   };
-
-  const location: Record<string, any> = {};
-  if (typeof latitude === 'number') location.lat = latitude;
-  if (typeof longitude === 'number') location.lng = longitude;
-  if (prefecture) location.prefecture = prefecture;
-  if (city) location.city = city;
-
-  if (Object.keys(location).length) {
-    data.location = location;
-  }
 
   try {
     await addDoc(collection(db, 'posts'), data);
